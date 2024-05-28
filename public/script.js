@@ -49,17 +49,27 @@ if (document.querySelector('.server-list')) {
 
 // Function to set user info
 async function setUserInfo() {
-    const userResponse = await fetch('/api/user');
-    const user = await userResponse.json();
-    
-    const userButton = document.querySelector('.user-button');
-    const avatarUrl = user.avatar 
-        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-        : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    try {
+        const userResponse = await fetch('/api/user');
+        if (!userResponse.ok) {
+            throw new Error('User not logged in');
+        }
+        const user = await userResponse.json();
+        
+        const userButton = document.querySelector('.user-button');
+        const avatarUrl = user.avatar 
+            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+            : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-    userButton.innerHTML = `
-        ${user.username} <img src="${avatarUrl}" alt="User Avatar">
-    `;
+        userButton.innerHTML = `
+            ${user.username} <img src="${avatarUrl}" alt="User Avatar">
+        `;
+        document.querySelector('.login-button').style.display = 'none';
+        document.querySelector('.dropdown').style.display = 'block';
+        document.querySelector('.dashboard-button').style.display = 'block';
+    } catch (error) {
+        console.log('User not logged in:', error);
+    }
 }
 
 if (document.querySelector('.user-button')) {

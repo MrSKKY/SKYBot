@@ -165,7 +165,6 @@ app.get('/dashboard/:serverId', async (req, res) => {
     res.sendFile(__dirname + '/public/config.html');
 });
 
-
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');

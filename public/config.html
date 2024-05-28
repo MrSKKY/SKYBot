@@ -15,8 +15,10 @@
                     <img src="/images/logo.png" alt="Logo">
                 </a>
             </div>
-            <div class="nav-links">
+            <div class="nav-center">
                 <a href="/dashboard" class="button">Dashboard</a>
+            </div>
+            <div class="nav-links">
                 <div class="dropdown">
                     <button class="button user-button" id="user-button">Loading...<img src="/images/user-avatar.png" alt="User Avatar"></button>
                     <div class="dropdown-content">
@@ -30,12 +32,12 @@
         <section class="server-config">
             <h1>Server Configuration</h1>
             <div id="server-info">
-                <form id="prefix-form">
-                    <label for="prefix">Command Prefix:</label>
-                    <input type="text" id="prefix" name="prefix" maxlength="5" required>
-                    <button type="submit">Save</button>
+                <form id="prefix-form" class="form-container">
+                    <label for="prefix" class="form-label">Command Prefix</label>
+                    <input type="text" id="prefix" name="prefix" class="form-input" maxlength="5" required>
+                    <button type="submit" class="form-button">Save</button>
                 </form>
-                <p id="status-message"></p>
+                <p id="status-message" class="status-message"></p>
             </div>
         </section>
     </main>

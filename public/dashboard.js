@@ -39,28 +39,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Navigate to the server configuration page
                     window.location.href = `/dashboard/${server.id}`;
                 } else {
-                    // Open a popup for Discord OAuth2 invite flow
+                    // Redirect for Discord OAuth2 invite flow
                     const url = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&scope=bot+applications.commands&permissions=${BOT_PERMISSIONS}&guild_id=${server.id}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
-                    const newWindow = window.open(url, 'discordInvite', 'width=500,height=800');
-
-                    if (newWindow) {
-                        const interval = setInterval(() => {
-                            try {
-                                if (newWindow.closed) {
-                                    clearInterval(interval);
-                                    location.reload();
-                                } else if (newWindow.location.href.includes(REDIRECT_URI)) {
-                                    clearInterval(interval);
-                                    handleOAuth2Callback(newWindow.location.search);
-                                    newWindow.close();
-                                }
-                            } catch (e) {
-                                // Ignore cross-origin errors
-                            }
-                        }, 1000);
-                    } else {
-                        alert('Popup blocked! Please allow popups for this site.');
-                    }
+                    window.location.href = url;
                 }
             });
 
@@ -92,16 +73,15 @@ function handleOAuth2Callback(search) {
             method: 'GET'
         }).then(response => response.json())
           .then(data => {
+              console.log('Invite callback response:', data); // Add logging
               if (data.success) {
-                  window.opener.location.href = '/dashboard#success';
+                  window.location.href = '/dashboard#success';
               } else {
-                  window.opener.location.href = '/dashboard#error';
+                  window.location.href = '/dashboard#error';
               }
-              window.close();
           }).catch(error => {
               console.error('Error:', error);
-              window.opener.location.href = '/dashboard#error';
-              window.close();
+              window.location.href = '/dashboard#error';
           });
     }
 }
