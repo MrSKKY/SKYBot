@@ -1,0 +1,25 @@
+/* Center the "Dashboard" button in the middle of the nav */
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    flex: 1;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.nav-links .button {
+    margin-right: auto;
+}
+
+.dropdown {
+    margin-left: auto;
+}

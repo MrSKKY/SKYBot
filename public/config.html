@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Server Configuration</title>
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
@@ -11,12 +11,12 @@
     <header>
         <nav>
             <div class="logo">
-                 <a href="/">
+                <a href="/">
                     <img src="/images/logo.png" alt="Logo">
                 </a>
-                <!-- <h1>Bot</h1> -->
             </div>
             <div class="nav-links">
+                <a href="/dashboard" class="button">Dashboard</a>
                 <div class="dropdown">
                     <button class="button user-button" id="user-button">Loading...<img src="/images/user-avatar.png" alt="User Avatar"></button>
                     <div class="dropdown-content">
@@ -27,24 +27,18 @@
         </nav>
     </header>
     <main>
-        <section class="server-selection">
-            <h1>Server auswählen</h1>
-            <div class="server-list" id="server-list">
-                <!-- Server cards will be dynamically populated here -->
-            </div>
-        </section>
-        <section class="server-dashboard" id="server-dashboard" style="display:none;">
-            <h1>Server Dashboard</h1>
+        <section class="server-config">
+            <h1>Server Configuration</h1>
             <div id="server-info">
-                <!-- Server information will be dynamically loaded here -->
+                <form id="prefix-form">
+                    <label for="prefix">Command Prefix:</label>
+                    <input type="text" id="prefix" name="prefix" maxlength="5" required>
+                    <button type="submit">Save</button>
+                </form>
+                <p id="status-message"></p>
             </div>
         </section>
     </main>
-    <script>
-        const CLIENT_ID = '1244628087522594816'; // Add your Discord client ID here
-        const BOT_PERMISSIONS = '8'; // Add the bot permissions integer here
-        const REDIRECT_URI = 'http://toxicnetwork.ddns.net/callback'; // Ensure this matches your redirect URI
-    </script>
-    <script src="/dashboard.js"></script> <!-- Reference to the dashboard.js file -->
+    <script src="/config.js"></script> <!-- Reference to the config.js file -->
 </body>
 </html>

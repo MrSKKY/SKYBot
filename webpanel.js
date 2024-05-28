@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
@@ -78,6 +78,38 @@ app.get('/callback', async (req, res) => {
     }
 });
 
+app.get('/invite-callback', async (req, res) => {
+    const code = req.query.code;
+    if (!code) {
+        return res.status(400).json({ success: false, error: 'No code provided' });
+    }
+
+    try {
+        const params = new URLSearchParams({
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: REDIRECT_URI,
+            scope: 'bot applications.commands',
+        });
+
+        const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', params, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+
+        const { access_token } = tokenResponse.data;
+
+        // Further actions with the token if needed
+        // For now, just send a success response
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'An error occurred during bot invitation' });
+    }
+});
+
 app.get('/dashboard', async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/');
@@ -117,6 +149,22 @@ app.get('/api/user', (req, res) => {
 
     res.json(req.session.user);
 });
+
+app.get('/dashboard/:serverId', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+
+    const serverId = req.params.serverId;
+    const guild = req.session.guilds.find(guild => guild.id === serverId);
+
+    if (!guild) {
+        return res.status(404).send('Not found or not authorized!');
+    }
+
+    res.sendFile(__dirname + '/public/config.html');
+});
+
 
 app.get('/logout', (req, res) => {
     req.session.destroy();
