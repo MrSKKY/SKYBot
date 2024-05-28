@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             actionButton.textContent = server.isBotInServer ? 'Setup' : 'Invite';
             actionButton.addEventListener('click', () => {
                 const url = server.isBotInServer ? 
-                    `/server/${server.id}` :
+                    `/dashboard/${server.id}` :  // Updated URL to point to the correct route
                     `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&scope=bot+applications.commands&permissions=${BOT_PERMISSIONS}&guild_id=${server.id}&response_type=code&redirect_uri=${REDIRECT_URI}`;
                 window.open(url, 'discordInvite', 'width=500,height=800');
             });

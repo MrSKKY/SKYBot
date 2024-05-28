@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const axios = require('axios');
 const dotenv = require('dotenv');
-const pool = require('./database'); // Adjust the path if necessary
+const { saveConfig, getConfig } = require('./database'); // Adjust the path if necessary
 
 dotenv.config();
 
@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
@@ -30,14 +30,12 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req, res) => {
     const authorizeUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify guilds`;
-    console.log(`Redirecting to: ${authorizeUrl}`);
     res.redirect(authorizeUrl);
 });
 
 app.get('/callback', async (req, res) => {
     const code = req.query.code;
     if (!code) {
-        console.error("No code received in the callback");
         return res.send('No code provided');
     }
 
@@ -71,15 +69,12 @@ app.get('/callback', async (req, res) => {
             },
         });
 
-        console.log('Fetched user guilds:', guildsResponse.data); // Debugging line
-
         req.session.user = userResponse.data;
         req.session.guilds = guildsResponse.data;
         req.session.access_token = access_token;
 
         res.redirect('/dashboard');
     } catch (error) {
-        console.error('Error during authentication:', error);
         res.send('An error occurred during authentication');
     }
 });
@@ -98,7 +93,6 @@ app.get('/api/servers', async (req, res) => {
     }
 
     try {
-        console.log('Session guilds:', req.session.guilds); // Debugging line
         const userGuilds = req.session.guilds.filter(guild => {
             return guild.owner || (guild.permissions & 0x8) === 0x8; // Check if the user is the owner or has ADMINISTRATOR permission
         });
@@ -106,18 +100,13 @@ app.get('/api/servers', async (req, res) => {
         const botServersResponse = await axios.get(`${BOT_API_URL}/api/servers`);
         const botServers = botServersResponse.data;
 
-        console.log('Bot servers:', botServers); // Debugging line
-
         const enrichedGuilds = userGuilds.map(guild => {
             guild.isBotInServer = botServers.some(botGuild => botGuild.id === guild.id); // Add a flag to indicate if the bot is in the server
             return guild;
         });
 
-        console.log('Enriched guilds:', enrichedGuilds); // Debugging line
-
         res.json(enrichedGuilds);
     } catch (error) {
-        console.error('Error fetching servers:', error);
         res.status(500).send('An error occurred while fetching servers.');
     }
 });
@@ -130,19 +119,14 @@ app.get('/api/user', (req, res) => {
     res.json(req.session.user);
 });
 
+// Handle form submission
 app.post('/save-settings', async (req, res) => {
-    const { server_id, prefix, welcome_message } = req.body;
-
+    const { serverId, prefix } = req.body;
     try {
-        await pool.query(
-            `INSERT INTO server_settings (server_id, prefix, welcome_message) VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE prefix=VALUES(prefix), welcome_message=VALUES(welcome_message)`,
-            [server_id, prefix, welcome_message]
-        );
-        res.redirect('/dashboard');
-    } catch (err) {
-        console.error('Error saving settings:', err);
-        res.send('An error occurred while saving settings.');
+        await saveConfig(serverId, { prefix });
+        res.send('Settings saved successfully! <a href="/dashboard/' + serverId + '">Go back</a>');
+    } catch (error) {
+        res.send('Failed to save settings.');
     }
 });
 
@@ -151,9 +135,19 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/server/:id', (req, res) => {
-    // Handle the server-specific settings here
-    res.send(`Settings for server ID: ${req.params.id}`);
+// Serve the dashboard page
+app.get('/dashboard/:serverId', async (req, res) => {
+    const serverId = req.params.serverId;
+    const config = await getConfig(serverId) || { prefix: '' }; // Default to empty if no config
+    res.send(`
+        <h1>Settings for server ID: ${serverId}</h1>
+        <form action="/save-settings" method="post">
+            <label for="prefix">Command Prefix:</label>
+            <input type="text" id="prefix" name="prefix" value="${config.prefix}">
+            <input type="hidden" name="serverId" value="${serverId}">
+            <button type="submit">Save</button>
+        </form>
+    `);
 });
 
 app.listen(PORT, () => {

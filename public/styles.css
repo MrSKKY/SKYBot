@@ -96,7 +96,7 @@ nav {
 }
 
 .server-card {
-    background-color: rgba(44, 47, 51, 0.8); /* Adding transparency */
+    background-color: rgba(44, 47, 51, 0.4); /* Adding transparency */
     padding: 20px;
     border-radius: 8px;
     text-align: center;
@@ -105,8 +105,8 @@ nav {
 }
 
 .server-card img {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     margin-bottom: 10px;
 }
