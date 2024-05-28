@@ -29,6 +29,6 @@ app.get('/api/servers', async (req, res) => {
     res.json(servers);
 });
 
-app.listen(PORT, () => {
-    console.log(`Bot API running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Bot API running at ${process.env.BOT_API_URL}`);
 });

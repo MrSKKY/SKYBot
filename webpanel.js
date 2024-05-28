@@ -2,16 +2,16 @@ const express = require('express');
 const session = require('express-session');
 const axios = require('axios');
 const dotenv = require('dotenv');
-const pool = require('./database');
+const pool = require('./database'); // Adjust the path if necessary
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-const PORT = process.env.PORT; // Directly use the PORT from the .env file
+
+const PORT = process.env.PORT;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-    const authorizeUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=identify guilds`;
+    const authorizeUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify guilds`;
     console.log(`Redirecting to: ${authorizeUrl}`);
     res.redirect(authorizeUrl);
 });
@@ -71,22 +71,15 @@ app.get('/callback', async (req, res) => {
             },
         });
 
+        console.log('Fetched user guilds:', guildsResponse.data); // Debugging line
+
         req.session.user = userResponse.data;
         req.session.guilds = guildsResponse.data;
         req.session.access_token = access_token;
 
         res.redirect('/dashboard');
     } catch (error) {
-        if (error.response) {
-            console.error('Error response data:', error.response.data);
-            console.error('Error response status:', error.response.status);
-            console.error('Error response headers:', error.response.headers);
-        } else if (error.request) {
-            console.error('Error request data:', error.request);
-        } else {
-            console.error('Error message:', error.message);
-        }
-        console.error('Error config:', error.config);
+        console.error('Error during authentication:', error);
         res.send('An error occurred during authentication');
     }
 });
@@ -105,14 +98,24 @@ app.get('/api/servers', async (req, res) => {
     }
 
     try {
+        console.log('Session guilds:', req.session.guilds); // Debugging line
+        const userGuilds = req.session.guilds.filter(guild => {
+            return guild.owner || (guild.permissions & 0x8) === 0x8; // Check if the user is the owner or has ADMINISTRATOR permission
+        });
+
         const botServersResponse = await axios.get(`${BOT_API_URL}/api/servers`);
         const botServers = botServersResponse.data;
 
-        const userGuilds = req.session.guilds.filter(guild => {
-            return botServers.some(botGuild => botGuild.id === guild.id && (guild.permissions & 0x8) === 0x8); // 0x8 is the ADMINISTRATOR permission
+        console.log('Bot servers:', botServers); // Debugging line
+
+        const enrichedGuilds = userGuilds.map(guild => {
+            guild.isBotInServer = botServers.some(botGuild => botGuild.id === guild.id); // Add a flag to indicate if the bot is in the server
+            return guild;
         });
 
-        res.json(userGuilds);
+        console.log('Enriched guilds:', enrichedGuilds); // Debugging line
+
+        res.json(enrichedGuilds);
     } catch (error) {
         console.error('Error fetching servers:', error);
         res.status(500).send('An error occurred while fetching servers.');

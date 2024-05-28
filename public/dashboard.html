@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <header>
         <nav>
             <div class="logo">
-                <img src="/images/placeholder-logo.png" alt="Logo"> <!-- Placeholder logo -->
-                <h1>MyBot</h1>
+                <img src="/images/logo.png" alt="Logo">
+                <h1>Bot</h1>
             </div>
             <div class="nav-links">
                 <div class="dropdown">
-                    <button class="button user-button">mrsky03 <img src="/images/user-avatar.png" alt="User Avatar"></button>
+                    <button class="button user-button" id="user-button">Loading...<img src="/images/user-avatar.png" alt="User Avatar"></button>
                     <div class="dropdown-content">
                         <a href="/logout">Logout</a>
                     </div>
@@ -27,11 +27,16 @@
     <main>
         <section class="server-selection">
             <h1>Server auswählen</h1>
-            <div class="server-list">
+            <div class="server-list" id="server-list">
                 <!-- Server cards will be dynamically populated here -->
             </div>
         </section>
     </main>
-    <script src="/script.js"></script>
+    <script>
+        const CLIENT_ID = '1244628087522594816'; // Add your Discord client ID here
+        const BOT_PERMISSIONS = '8'; // Add the bot permissions integer here
+        const REDIRECT_URI = 'http://toxicnetwork.ddns.net:5000/callback'; // Ensure this matches your redirect URI
+    </script>
+    <script src="/dashboard.js"></script> <!-- Reference to the dashboard.js file -->
 </body>
 </html>
