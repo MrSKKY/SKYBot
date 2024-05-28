@@ -2,7 +2,6 @@ const express = require('express');
 const session = require('express-session');
 const axios = require('axios');
 const dotenv = require('dotenv');
-const { saveConfig, getConfig } = require('./database'); // Adjust the path if necessary
 
 dotenv.config();
 
@@ -119,35 +118,9 @@ app.get('/api/user', (req, res) => {
     res.json(req.session.user);
 });
 
-// Handle form submission
-app.post('/save-settings', async (req, res) => {
-    const { serverId, prefix } = req.body;
-    try {
-        await saveConfig(serverId, { prefix });
-        res.send('Settings saved successfully! <a href="/dashboard/' + serverId + '">Go back</a>');
-    } catch (error) {
-        res.send('Failed to save settings.');
-    }
-});
-
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
-});
-
-// Serve the dashboard page
-app.get('/dashboard/:serverId', async (req, res) => {
-    const serverId = req.params.serverId;
-    const config = await getConfig(serverId) || { prefix: '' }; // Default to empty if no config
-    res.send(`
-        <h1>Settings for server ID: ${serverId}</h1>
-        <form action="/save-settings" method="post">
-            <label for="prefix">Command Prefix:</label>
-            <input type="text" id="prefix" name="prefix" value="${config.prefix}">
-            <input type="hidden" name="serverId" value="${serverId}">
-            <button type="submit">Save</button>
-        </form>
-    `);
 });
 
 app.listen(PORT, () => {
